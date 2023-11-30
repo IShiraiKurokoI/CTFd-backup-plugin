@@ -52,7 +52,7 @@
                                 {{ "Backup interval (Unit: day)" if en else "进行备份的间隔 (单位：天)" }}
                             </label>
                             <div class="input-group">
-                                <input class="form-control" id='interval' name='backup:interval' type='text'
+                                <input class="form-control" id='interval' name='backup:interval' type='number'
                                        {% if interval is defined and interval !=None %}value="{{ interval }}" {% endif
                                        %}>
                                 <div class="input-group-append">
@@ -67,11 +67,22 @@
                                 {{ "Backup time (Unit: hour)" if en else "进行备份的时间 (单位：小时)" }}
                             </label>
                             <div class="input-group">
-                                <input class="form-control" id='time' name='backup:time' type='text'
+                                <input class="form-control" id='time' name='backup:time' type='number' max="24" min="0"
                                        {% if time is defined and time !=None %}value="{{ time }}" {% endif %}>
                                 <div class="input-group-append">
                                     <span class="input-group-text">{{ "Hours" if en else "小时" }}</span>
                                 </div>
+                            </div>
+                        </div>
+
+                        {% set max = get_config('backup:max') %}
+                        <div class="form-group">
+                            <label for="max">
+                                {{ "Backup Max Number" if en else "最大保存的备份个数" }}
+                            </label>
+                            <div class="input-group">
+                                <input class="form-control" id='max' name='backup:max' type='number'
+                                       {% if max is defined and max !=None %}value="{{ max }}" {% endif %}>
                             </div>
                         </div>
 

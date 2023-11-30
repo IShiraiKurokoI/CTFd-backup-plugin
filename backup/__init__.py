@@ -37,6 +37,7 @@ def config(app):
             'enabled': 'false',
             'interval': '7',
             'time': '3',
+            'max': '8',
             'setup': 'true'
         }.items():
             set_config('backup:' + key, val)
@@ -207,6 +208,20 @@ def load(app):
         backup.seek(0)
         return backup
 
+    def delete_oldest_file(folder_path):
+        # 获取文件夹内所有文件
+        files = [f for f in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, f))]
+
+        # 如果文件数大于8个，进行删除操作
+        if len(files) > get_config("backup:max"):
+            # 按文件的修改时间进行排序
+            files = sorted(files, key=lambda x: os.path.getmtime(os.path.join(folder_path, x)))
+
+            # 删除最旧的文件
+            file_to_delete = os.path.join(folder_path, files[0])
+            os.remove(file_to_delete)
+            print(f"[Auto Backup] 删除了最旧的备份文件：{file_to_delete}", flush=True)
+
     def write_backup():
         backup_file = custom_export_ctf()
 
@@ -223,6 +238,9 @@ def load(app):
         full_name = os.path.join(auto_backups_folder, f"{name}.{day}.zip")
         with open(full_name, "wb") as target:
             shutil.copyfileobj(backup_file, target)
+        print(f"[Auto Backup] 备份完成：{name}.{day}.zip", flush=True)
+        # 删除旧备份
+        delete_oldest_file(auto_backups_folder)
 
     @page_blueprint.route("/admin/backupNow")
     @admins_only
