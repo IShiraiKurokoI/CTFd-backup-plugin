@@ -5,5 +5,5 @@
 English:
 
 Provides auto backup utils for CTFd. Support Simplified Chinese and English
-![](docs/1.png)
+![](docs/3.png)
 ![](docs/2.png)
