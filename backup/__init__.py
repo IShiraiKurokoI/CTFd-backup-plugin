@@ -276,7 +276,8 @@ def load(app):
 
     def update_schedule(it, t):
         schedule.clear()
-        schedule.every(it).days.at(convert_hours_to_time_string(t), pytz.timezone(get_config("backend_timezone"))).do(backup)
+        schedule.every(it).days.at(convert_hours_to_time_string(t),
+                                   pytz.timezone(get_config("backend_timezone", "Asia/Shanghai"))).do(backup)
         print("[Auto Backup] 计划任务重设完成！", flush=True)
 
     def run_schedule():
@@ -296,6 +297,7 @@ def load(app):
                       trigger="interval",
                       seconds=1)
 
-    schedule.every(interval).days.at(convert_hours_to_time_string(time), pytz.timezone(get_config("backend_timezone"))).do(backup)
+    schedule.every(interval).days.at(convert_hours_to_time_string(time),
+                                     pytz.timezone(get_config("backend_timezone", "Asia/Shanghai"))).do(backup)
 
     app.register_blueprint(page_blueprint)
