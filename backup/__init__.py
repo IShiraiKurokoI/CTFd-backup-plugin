@@ -8,6 +8,7 @@ import zipfile
 from datetime import datetime
 from io import BytesIO
 import schedule
+import pytz
 
 import dataset
 from flask_apscheduler import APScheduler
@@ -275,7 +276,7 @@ def load(app):
 
     def update_schedule(it, t):
         schedule.clear()
-        schedule.every(it).days.at(convert_hours_to_time_string(t), get_config("backend_timezone")).do(backup)
+        schedule.every(it).days.at(convert_hours_to_time_string(t), pytz.timezone(get_config("backend_timezone"))).do(backup)
         print("[Auto Backup] 计划任务重设完成！", flush=True)
 
     def run_schedule():
@@ -295,6 +296,6 @@ def load(app):
                       trigger="interval",
                       seconds=1)
 
-    schedule.every(interval).days.at(convert_hours_to_time_string(time), get_config("backend_timezone")).do(backup)
+    schedule.every(interval).days.at(convert_hours_to_time_string(time), pytz.timezone(get_config("backend_timezone"))).do(backup)
 
     app.register_blueprint(page_blueprint)
