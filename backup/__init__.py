@@ -6,6 +6,7 @@ import os
 import tempfile
 import zipfile
 from datetime import datetime
+from functools import wraps
 from io import BytesIO
 import schedule
 import pytz
@@ -22,6 +23,7 @@ from CTFd.utils import get_config, set_config, get_app_config, current_backend_t
 from flask import request, render_template, Blueprint, send_file
 
 from ...api import CTFd_API_v1
+from ...cache import cache
 from ...utils.config import ctf_name
 from ...utils.decorators import admins_only
 from ...utils.exports import freeze_export
@@ -252,6 +254,29 @@ def load(app):
             'message': '备份完成！'
         }, 200
 
+    def single_task(task, t):
+        def wrap(func):
+            @wraps(func)
+            def inner(*args, **kwargs):
+                add_result = cache.get(key=task)
+                if not add_result:
+                    cache.set(key=task, value=True, timeout=t)
+                    try:
+                        result = func(*args, **kwargs)
+                        return result
+                    except Exception as e:
+                        raise e
+                else:
+                    return
+
+            return inner
+
+        return wrap
+
+    def convert_hours_to_time_string(hours):
+        return f"{hours:02d}:00"
+
+    @single_task("backup", 1800)
     def backup():
         with app.app_context():
             if get_config("backup:enabled"):
@@ -260,11 +285,7 @@ def load(app):
             else:
                 print("[Auto Backup] 自动备份未启用。", flush=True)
 
-    def convert_hours_to_time_string(hours):
-        # 将小时数转换成"HH:MM"格式的字符串
-        # 假设小时数在合理范围内，例如 0 到 23
-        return f"{hours:02d}:00"
-
+    @single_task("backup-check", 5)
     def check():
         global interval, time
         with app.app_context():
@@ -273,6 +294,7 @@ def load(app):
                 time = get_config("backup:time")
                 print("[Auto Backup] 自动备份配置已更新，正在重设计划任务！", flush=True)
                 update_schedule(interval, time)
+            schedule.run_pending()
 
     def update_schedule(it, t):
         schedule.clear()
@@ -280,22 +302,13 @@ def load(app):
                                    pytz.timezone(get_config("backend_timezone", "Asia/Shanghai"))).do(backup)
         print("[Auto Backup] 计划任务重设完成！", flush=True)
 
-    def run_schedule():
-        with app.app_context():
-            schedule.run_pending()
-
     scheduler = APScheduler()
     scheduler.init_app(app)
     scheduler.start()
     scheduler.add_job(id='auto-backup-check',
                       func=check,
                       trigger="interval",
-                      seconds=3600)
-
-    scheduler.add_job(id='schedule',
-                      func=run_schedule,
-                      trigger="interval",
-                      seconds=1)
+                      seconds=10)
 
     schedule.every(interval).days.at(convert_hours_to_time_string(time),
                                      pytz.timezone(get_config("backend_timezone", "Asia/Shanghai"))).do(backup)
