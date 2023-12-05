@@ -285,7 +285,6 @@ def load(app):
             else:
                 print("[Auto Backup] 自动备份未启用。", flush=True)
 
-    @single_task("backup-check", 5)
     def check():
         global interval, time
         with app.app_context():
