@@ -27,7 +27,7 @@ from ...cache import cache
 from ...utils.config import ctf_name
 from ...utils.decorators import admins_only
 from ...utils.exports import freeze_export
-from ...utils.logging import log, log_simple
+from ...utils.logging import log
 from ...utils.migrations import get_current_revision
 from ...utils.uploads import get_uploader
 
