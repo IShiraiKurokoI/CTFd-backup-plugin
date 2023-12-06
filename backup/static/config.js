@@ -17,3 +17,23 @@ $(".config-section > form:not(.form-upload)").submit(async function (event) {
     await CTFd.api.patch_config_list({}, params);
     location.reload();
 });
+
+$('a[data-toggle="tab"]').on("shown.bs.tab", function(e) {
+    sessionStorage.setItem("activeTab", $(e.target).attr("href"));
+});
+
+$('a[data-toggle="pill"]').on("shown.bs.tab", function(e) {
+    sessionStorage.setItem("activeTab", $(e.target).attr("href"));
+});
+
+let activeTab = sessionStorage.getItem("activeTab");
+if (activeTab) {
+    let target = $(
+        `.nav-tabs a[href="${activeTab}"], .nav-pills a[href="${activeTab}"]`
+    );
+    if (target.length) {
+        target.tab("show");
+    } else {
+        sessionStorage.removeItem("activeTab");
+    }
+}
