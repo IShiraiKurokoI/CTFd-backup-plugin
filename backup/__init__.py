@@ -300,6 +300,7 @@ def load(app):
         schedule.every(it).days.at(convert_hours_to_time_string(t),
                                    pytz.timezone(get_config("backend_timezone", "Asia/Shanghai"))).do(backup)
         print("[Auto Backup] 计划任务重设完成！", flush=True)
+        print(f'[Auto Backup] 计划任务内容{schedule.get_jobs()}', flush=True)
 
     scheduler = APScheduler()
     scheduler.init_app(app)
@@ -311,5 +312,6 @@ def load(app):
 
     schedule.every(interval).days.at(convert_hours_to_time_string(time),
                                      pytz.timezone(get_config("backend_timezone", "Asia/Shanghai"))).do(backup)
+    print(f'[Auto Backup] 计划任务内容{schedule.get_jobs()}', flush=True)
 
     app.register_blueprint(page_blueprint)
